@@ -31,7 +31,6 @@ body {
 }
 .title {
   font-weight: 640;
-  font-size: 13px;
 }
 .refresh {
   -webkit-app-region: no-drag;
@@ -49,26 +48,26 @@ body {
   overflow-y: auto;
   padding: 4px 0;
 }
-.issue {
+.row {
   display: flex;
   gap: 8px;
   align-items: baseline;
   padding: 8px 12px;
   border-bottom: 1px solid var(--line);
 }
-.issue-key {
+.key {
   color: var(--accent);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.issue-sum {
+.sum {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.issue-status {
+.tag {
   color: var(--muted);
   font-size: 11px;
   white-space: nowrap;

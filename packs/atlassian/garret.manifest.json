@@ -1,0 +1,43 @@
+{
+  "apiVersion": 2,
+  "id": "garret.atlassian",
+  "publisher": "garret",
+  "name": "Atlassian",
+  "version": "1.0.0",
+  "description": "Jira issues and Bitbucket pull requests. One Atlassian account.",
+  "shared": {
+    "settings": {
+      "schema": [
+        { "key": "email", "label": "Email", "type": "string", "placeholder": "you@company.com" },
+        { "key": "token", "label": "API token", "type": "secret", "placeholder": "id.atlassian.com API token" },
+        { "key": "jiraSite", "label": "Jira site", "type": "string", "placeholder": "your-domain.atlassian.net" }
+      ]
+    }
+  },
+  "widgets": [
+    {
+      "id": "jira",
+      "name": "Jira Tickets",
+      "ui": "dist/jira",
+      "capabilities": ["secrets", "network:*.atlassian.net"],
+      "defaultSize": { "w": 5, "h": 6 },
+      "settings": {
+        "schema": [
+          { "key": "jql", "label": "JQL (optional)", "type": "string", "placeholder": "assignee = currentUser() AND statusCategory != Done" }
+        ]
+      }
+    },
+    {
+      "id": "pull-requests",
+      "name": "Pull Requests",
+      "ui": "dist/prs",
+      "capabilities": ["secrets", "network:api.bitbucket.org"],
+      "defaultSize": { "w": 5, "h": 6 },
+      "settings": {
+        "schema": [
+          { "key": "repos", "label": "Repositories", "type": "string", "placeholder": "workspace/repo, workspace/repo2" }
+        ]
+      }
+    }
+  ]
+}

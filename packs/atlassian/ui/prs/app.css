@@ -48,21 +48,29 @@ body {
   overflow-y: auto;
   padding: 4px 0;
 }
-.pr {
+.row {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  gap: 8px;
+  align-items: baseline;
   padding: 8px 12px;
   border-bottom: 1px solid var(--line);
 }
-.pr-title {
+.key {
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sum {
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pr-repo {
+.tag {
   color: var(--muted);
   font-size: 11px;
+  white-space: nowrap;
 }
 .note {
   padding: 16px;

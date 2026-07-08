@@ -1,20 +1,11 @@
 [
   {
-    "id": "garret.jira",
-    "name": "Jira",
+    "id": "garret.atlassian",
+    "name": "Atlassian",
     "publisher": "garret",
-    "description": "Your open Jira issues.",
+    "description": "Jira issues and Bitbucket pull requests. One Atlassian account.",
     "version": "1.0.0",
-    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.jira.garret",
-    "hasHost": false
-  },
-  {
-    "id": "garret.bitbucket",
-    "name": "Bitbucket",
-    "publisher": "garret",
-    "description": "Your open Bitbucket pull requests.",
-    "version": "1.0.0",
-    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.bitbucket.garret",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.atlassian.garret",
     "hasHost": false
   },
   {

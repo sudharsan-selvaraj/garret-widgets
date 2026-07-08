@@ -1,0 +1,33 @@
+name: build-packs
+
+# Build every pack into a .garret and attach it to the "packs" GitHub Release. index.json points at
+# these release assets, so binaries never live in source. Runs when a pack (or the builder) changes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packs/**'
+      - 'scripts/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build packs
+        run: node scripts/build.mjs
+      - name: Publish .garret assets to the "packs" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view packs >/dev/null 2>&1 \
+            || gh release create packs --title "Widget packs" --notes "Prebuilt .garret packs, auto-built from packs/."
+          gh release upload packs dist/*.garret --clobber

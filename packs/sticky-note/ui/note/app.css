@@ -1,0 +1,44 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+/* Accent themes — the body class is set from the `accent` setting. */
+body {
+  --paper: #fbe58a;
+  --ink: #4a3f10;
+  background: var(--paper);
+}
+body.accent-blue {
+  --paper: #a9d3ff;
+  --ink: #11324f;
+}
+body.accent-pink {
+  --paper: #ffb7d5;
+  --ink: #57132f;
+}
+body.accent-green {
+  --paper: #a9e6b0;
+  --ink: #123a1c;
+}
+#pad {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 14px 16px;
+  background: transparent;
+  color: var(--ink);
+  font-family:
+    'SF Pro Text', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+#pad::placeholder {
+  color: var(--ink);
+  opacity: 0.4;
+}

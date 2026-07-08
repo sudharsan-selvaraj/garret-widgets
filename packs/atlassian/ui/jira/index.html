@@ -7,9 +7,11 @@
   </head>
   <body>
     <header class="bar">
-      <span class="title">Jira Tickets</span>
-      <button id="refresh" class="refresh" title="Refresh">↻</button>
+      <span class="title" id="title">Jira Tickets</span>
+      <button id="gear" title="Configure">⚙</button>
+      <button id="refresh" title="Refresh">↻</button>
     </header>
+    <div id="config" class="config" hidden></div>
     <div id="body" class="body"></div>
     <script src="app.js"></script>
   </body>

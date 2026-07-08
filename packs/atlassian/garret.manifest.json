@@ -3,14 +3,15 @@
   "id": "garret.atlassian",
   "publisher": "garret",
   "name": "Atlassian",
-  "version": "1.0.0",
-  "description": "Jira issues and Bitbucket pull requests. One Atlassian account.",
+  "version": "1.1.0",
+  "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
   "shared": {
     "settings": {
       "schema": [
         { "key": "email", "label": "Email", "type": "string", "placeholder": "you@company.com" },
-        { "key": "token", "label": "API token", "type": "secret", "placeholder": "id.atlassian.com API token" },
-        { "key": "jiraSite", "label": "Jira site", "type": "string", "placeholder": "your-domain.atlassian.net" }
+        { "key": "jiraSite", "label": "Jira site", "type": "string", "placeholder": "your-domain.atlassian.net" },
+        { "key": "jiraToken", "label": "Jira API token", "type": "secret", "placeholder": "id.atlassian.com token" },
+        { "key": "bitbucketToken", "label": "Bitbucket token", "type": "secret", "placeholder": "Bitbucket API token / app password" }
       ]
     }
   },
@@ -20,24 +21,16 @@
       "name": "Jira Tickets",
       "ui": "dist/jira",
       "capabilities": ["secrets", "network:*.atlassian.net"],
-      "defaultSize": { "w": 5, "h": 6 },
-      "settings": {
-        "schema": [
-          { "key": "jql", "label": "JQL (optional)", "type": "string", "placeholder": "assignee = currentUser() AND statusCategory != Done" }
-        ]
-      }
+      "defaultSize": { "w": 5, "h": 7 },
+      "minSize": { "w": 3, "h": 3 }
     },
     {
       "id": "pull-requests",
       "name": "Pull Requests",
       "ui": "dist/prs",
-      "capabilities": ["secrets", "network:api.bitbucket.org"],
-      "defaultSize": { "w": 5, "h": 6 },
-      "settings": {
-        "schema": [
-          { "key": "repos", "label": "Repositories", "type": "string", "placeholder": "workspace/repo, workspace/repo2" }
-        ]
-      }
+      "capabilities": ["secrets", "network:*.atlassian.net", "network:api.bitbucket.org"],
+      "defaultSize": { "w": 5, "h": 8 },
+      "minSize": { "w": 3, "h": 4 }
     }
   ]
 }

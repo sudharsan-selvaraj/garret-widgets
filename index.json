@@ -1,5 +1,23 @@
 [
   {
+    "id": "garret.jira",
+    "name": "Jira",
+    "publisher": "garret",
+    "description": "Your open Jira issues.",
+    "version": "1.0.0",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.jira.garret",
+    "hasHost": false
+  },
+  {
+    "id": "garret.bitbucket",
+    "name": "Bitbucket",
+    "publisher": "garret",
+    "description": "Your open Bitbucket pull requests.",
+    "version": "1.0.0",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.bitbucket.garret",
+    "hasHost": false
+  },
+  {
     "id": "demo.sticky-note",
     "name": "Sticky Note",
     "publisher": "demo",

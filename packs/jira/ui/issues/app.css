@@ -1,0 +1,86 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+:root {
+  --bg: #0e1014;
+  --fg: #e8eaed;
+  --muted: #9aa0a6;
+  --line: rgba(255, 255, 255, 0.08);
+  --accent: #0a84ff;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  font-size: 13px;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  -webkit-app-region: drag;
+}
+.title {
+  font-weight: 640;
+  font-size: 13px;
+}
+.refresh {
+  -webkit-app-region: no-drag;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+.refresh:hover {
+  color: var(--fg);
+}
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.issue {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.issue-key {
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.issue-sum {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.issue-status {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.note {
+  padding: 16px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.note b {
+  color: var(--fg);
+}
+.err {
+  color: #ff6b6b;
+}

@@ -139,7 +139,21 @@ async function fetchRepoPRs(ref, headers, state) {
     `${BB}/repositories/${encodeURIComponent(ws)}/${encodeURIComponent(repo)}/pullrequests?${stateQ}pagelen=30` +
     '&fields=values.id,values.title,values.state,values.author.display_name,values.author.account_id,values.comment_count,values.links.html.href,values.participants.role,values.participants.state,values.participants.user.account_id,values.participants.user.display_name'
   const res = await g.fetch(url, { headers })
-  if (!res.ok) throw new Error(`${ref}: ${res.status || res.statusText || 'failed'}`)
+  if (!res.ok) {
+    let detail = ''
+    try {
+      const t = await res.text()
+      try {
+        detail = JSON.parse(t)?.error?.message || t.slice(0, 140)
+      } catch {
+        detail = t.slice(0, 140)
+      }
+    } catch {
+      /* no body */
+    }
+    console.error('[PR fetch]', ref, { status: res.status, statusText: res.statusText, type: res.type, detail })
+    throw new Error(`${ref}: ${res.status || res.statusText || 'no status'}${detail ? ' — ' + detail : ''}`)
+  }
   return ((await res.json()).values || []).map((p) => ({ ...p, repo: ref }))
 }
 function passes(p, me) {
@@ -256,7 +270,7 @@ async function load() {
       else if (grp && grp.error) errors.push(grp.error)
     }
     if (!prs.length && errors.length) {
-      const auth = errors.some((e) => /: (401|403)$/.test(e))
+      const auth = errors.some((e) => /\b(401|403)\b/.test(e))
       return fail(auth ? 'Bitbucket auth failed — the token needs Bitbucket read access (a separate Bitbucket API token / app password, not the Jira one).' : `Could not load: ${errors.join('; ')}`)
     }
     render(prs)

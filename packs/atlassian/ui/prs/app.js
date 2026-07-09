@@ -10,6 +10,7 @@ const BB = 'https://api.bitbucket.org/2.0'
 const DEFAULTS = { repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: [] }
 let cfg = { ...DEFAULTS }
 const STATE_CLASS = { OPEN: 'open', MERGED: 'merged', DECLINED: 'declined' }
+const collapsedRepos = new Set() // per-session; which repo groups are collapsed
 
 function empty(html) {
   body.innerHTML = `<div class="svc-empty">${html}</div>`
@@ -185,13 +186,34 @@ function render(prs) {
   wrap.className = 'pr-widget'
   const byRepo = {}
   for (const p of shown) (byRepo[p.repo] = byRepo[p.repo] || []).push(p)
-  for (const repo of Object.keys(byRepo)) {
-    const head = document.createElement('div')
+  const repos = Object.keys(byRepo)
+  for (const repo of repos) {
+    const head = document.createElement('button')
     head.className = 'pr-group-head'
-    head.innerHTML = `<span class="pr-group-name"></span><span class="pr-group-count"></span>`
-    head.querySelector('.pr-group-name').textContent = repo
-    head.querySelector('.pr-group-count').textContent = String(byRepo[repo].length)
-    wrap.appendChild(head)
+    const chev = document.createElement('span')
+    chev.textContent = '▾'
+    chev.style.cssText = 'font-size:9px;color:var(--text-3);transition:transform .12s;width:10px'
+    const name = document.createElement('span')
+    name.className = 'pr-group-name'
+    name.textContent = repo
+    const count = document.createElement('span')
+    count.className = 'pr-group-count'
+    count.textContent = String(byRepo[repo].length)
+    head.append(chev, name, count)
+    const groupBody = document.createElement('div')
+    groupBody.className = 'pr-group-body'
+    // Collapsible — only worth showing the toggle affordance when there's more than one repo.
+    const collapsed = collapsedRepos.has(repo)
+    groupBody.style.display = collapsed ? 'none' : ''
+    chev.style.transform = collapsed ? 'rotate(-90deg)' : ''
+    head.addEventListener('click', () => {
+      const now = !collapsedRepos.has(repo)
+      if (now) collapsedRepos.add(repo)
+      else collapsedRepos.delete(repo)
+      groupBody.style.display = now ? 'none' : ''
+      chev.style.transform = now ? 'rotate(-90deg)' : ''
+    })
+    wrap.append(head, groupBody)
     for (const p of byRepo[repo]) {
       const rowEl = document.createElement('div')
       rowEl.className = 'pr-row'
@@ -237,7 +259,7 @@ function render(prs) {
         set('muted', [...(cfg.muted || []), p.id])
         render(prs)
       })
-      wrap.appendChild(rowEl)
+      groupBody.appendChild(rowEl)
     }
   }
   if (muted.length) {

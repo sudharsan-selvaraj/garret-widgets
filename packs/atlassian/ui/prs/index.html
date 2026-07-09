@@ -3,16 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="app.css" />
+    <!-- Shared native theme, served by Garret on this widget's own origin (see docs/widget-theme.md). -->
+    <link rel="stylesheet" href="~theme.css" />
   </head>
   <body>
-    <header class="bar">
-      <span class="title" id="title">Pull Requests</span>
-      <button id="gear" title="Configure">⚙</button>
-      <button id="refresh" title="Refresh">↻</button>
+    <header class="g-bar">
+      <span class="g-title" id="title">Pull Requests</span>
+      <button class="g-icon-btn" id="gear" title="Configure">⚙</button>
+      <button class="g-icon-btn" id="refresh" title="Refresh">↻</button>
     </header>
-    <div id="config" class="config" hidden></div>
-    <div id="body" class="body"></div>
+    <div id="config" class="settings-form" hidden></div>
+    <div id="body"></div>
     <script src="app.js"></script>
   </body>
 </html>

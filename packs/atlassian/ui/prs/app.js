@@ -1,7 +1,7 @@
-// Pull Requests — cloned from the built-in widget, new architecture. Account (email + Bitbucket token,
-// + Jira token/site for the "me" filters) lives in the pack's SHARED store; per-placement filters live
-// ON the widget (⚙, g.instanceStorage). PRs are listed per configured repo (Bitbucket API tokens can't
-// hit user-scoped list endpoints). Network via g.fetch (api.bitbucket.org + *.atlassian.net for /myself).
+// Pull Requests — native Garret look via the shared ~theme.css classes. Account (email + Bitbucket
+// token, + Jira token/site for the "me" filters) in the pack's SHARED store; per-placement filters ON
+// the widget (⚙, g.instanceStorage). PRs listed per configured repo (Bitbucket API tokens can't hit
+// user-scoped list endpoints). Network via g.fetch (api.bitbucket.org + *.atlassian.net for /myself).
 const g = window.__garret
 const titleEl = document.getElementById('title')
 const gearBtn = document.getElementById('gear')
@@ -10,14 +10,15 @@ const configEl = document.getElementById('config')
 const body = document.getElementById('body')
 const BB = 'https://api.bitbucket.org/2.0'
 
-const DEFAULTS = {
-  title: '', repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: []
-}
+const DEFAULTS = { title: '', repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: [] }
 let cfg = { ...DEFAULTS }
 const STATE_CLASS = { OPEN: 'open', MERGED: 'merged', DECLINED: 'declined' }
 
-function note(html, isErr) {
-  body.innerHTML = `<div class="note${isErr ? ' err' : ''}">${html}</div>`
+function empty(html) {
+  body.innerHTML = `<div class="svc-empty">${html}</div>`
+}
+function fail(msg) {
+  body.innerHTML = `<div class="svc-error">${msg}</div>`
 }
 function normalizeSite(s) {
   s = String(s || '').trim().replace(/\/+$/, '')
@@ -32,34 +33,48 @@ function parseRepos(raw) {
 function mapReview(s) {
   return s === 'approved' ? 'approved' : s === 'changes_requested' ? 'changes_requested' : 'pending'
 }
-
 async function account() {
-  const [email, site] = await Promise.all([g.shared.storage.get('email'), g.shared.storage.get('jiraSite')])
+  const [email, s] = await Promise.all([g.shared.storage.get('email'), g.shared.storage.get('jiraSite')])
   const [bbToken, jiraToken] = await Promise.all([
     g.shared.secrets.get('bitbucketToken').catch(() => ''),
     g.shared.secrets.get('jiraToken').catch(() => '')
   ])
-  return { email: (email || '').trim(), site: normalizeSite(site), bbToken: bbToken || '', jiraToken: jiraToken || '' }
+  return { email: (email || '').trim(), site: normalizeSite(s), bbToken: bbToken || '', jiraToken: jiraToken || '' }
 }
 
-/* ---- inline config ---- */
-function cfgRow(label, control) {
-  const row = document.createElement('div')
-  row.className = 'cfg-row'
+/* ---- config form (native .settings-form) ---- */
+function row(label, control) {
+  const r = document.createElement('div')
+  r.className = 'settings-row'
   const l = document.createElement('label')
+  l.className = 'settings-row-label'
   l.textContent = label
-  row.append(l, control)
-  return row
+  const c = document.createElement('div')
+  c.className = 'settings-row-control'
+  c.appendChild(control)
+  r.append(l, c)
+  return r
 }
-function input(key, ph) {
+function group(rows) {
+  const gEl = document.createElement('div')
+  gEl.className = 'settings-group'
+  rows.forEach((r) => gEl.appendChild(r))
+  const item = document.createElement('div')
+  item.className = 'settings-item'
+  item.appendChild(gEl)
+  return item
+}
+function inp(key, ph) {
   const el = document.createElement('input')
+  el.className = 'row-input'
   el.placeholder = ph || ''
   el.value = cfg[key] == null ? '' : String(cfg[key])
   el.addEventListener('change', () => set(key, el.value))
   return el
 }
-function select(key, opts) {
+function sel(key, opts) {
   const el = document.createElement('select')
+  el.className = 'row-select'
   for (const [v, label] of opts) {
     const o = document.createElement('option')
     o.value = v
@@ -72,18 +87,19 @@ function select(key, opts) {
 }
 function renderConfig() {
   configEl.innerHTML = ''
-  configEl.append(
-    cfgRow('Title', input('title', 'optional')),
-    cfgRow('Repos', input('repos', 'workspace/repo, workspace/repo2')),
-    cfgRow('State', select('state', [['OPEN', 'Open'], ['MERGED', 'Merged'], ['DECLINED', 'Declined'], ['ALL', 'All']])),
-    cfgRow('Author', select('author', [['anyone', 'Anyone'], ['me', 'Me'], ['name', 'Someone']]))
+  const rows = [
+    row('Title', inp('title', 'optional')),
+    row('Repos', inp('repos', 'workspace/repo, workspace/repo2')),
+    row('State', sel('state', [['OPEN', 'Open'], ['MERGED', 'Merged'], ['DECLINED', 'Declined'], ['ALL', 'All']])),
+    row('Author', sel('author', [['anyone', 'Anyone'], ['me', 'Me'], ['name', 'Someone']]))
+  ]
+  if (cfg.author === 'name') rows.push(row('Author name', inp('authorName', 'display name')))
+  rows.push(
+    row('Reviewer', sel('reviewer', [['anyone', 'Anyone'], ['me', 'Me']])),
+    row('My review', sel('reviewState', [['any', 'Any'], ['pending', 'Needs my review'], ['approved', 'Approved'], ['changes_requested', 'Changes requested']])),
+    row('Refresh', sel('refreshMin', [['0', 'Manual'], ['5', '5 min'], ['15', '15 min'], ['30', '30 min']]))
   )
-  if (cfg.author === 'name') configEl.append(cfgRow('Author name', input('authorName', 'display name')))
-  configEl.append(
-    cfgRow('Reviewer', select('reviewer', [['anyone', 'Anyone'], ['me', 'Me']])),
-    cfgRow('My review', select('reviewState', [['any', 'Any'], ['pending', 'Needs my review'], ['approved', 'Approved'], ['changes_requested', 'Changes requested']])),
-    cfgRow('Refresh', select('refreshMin', [['0', 'Manual'], ['5', '5 min'], ['15', '15 min'], ['30', '30 min']]))
-  )
+  configEl.appendChild(group(rows))
 }
 function set(key, val) {
   cfg[key] = val
@@ -105,20 +121,17 @@ function reschedulePoll() {
   if (m > 0) pollTimer = setInterval(() => g.active && void load(), m * 60000)
 }
 
-/* ---- self account id (for me filters), via Jira /myself ---- */
 async function selfAccountId(email, site, jiraToken) {
   if (!site || !jiraToken) return null
   try {
     const res = await g.fetch(`${site}/rest/api/3/myself`, {
       headers: { Authorization: 'Basic ' + btoa(`${email}:${jiraToken}`), Accept: 'application/json' }
     })
-    if (!res.ok) return null
-    return (await res.json()).accountId || null
+    return res.ok ? (await res.json()).accountId || null : null
   } catch {
     return null
   }
 }
-
 async function fetchRepoPRs(ref, headers, state) {
   const [ws, repo] = ref.split('/')
   const stateQ = state === 'ALL' ? '' : `state=${encodeURIComponent(state)}&`
@@ -126,11 +139,10 @@ async function fetchRepoPRs(ref, headers, state) {
     `${BB}/repositories/${encodeURIComponent(ws)}/${encodeURIComponent(repo)}/pullrequests?${stateQ}pagelen=30` +
     '&fields=values.id,values.title,values.state,values.author.display_name,values.author.account_id,values.comment_count,values.links.html.href,values.participants.role,values.participants.state,values.participants.user.account_id,values.participants.user.display_name'
   const res = await g.fetch(url, { headers })
-  if (!res.ok) throw new Error(`${ref}: ${res.status}`)
+  if (!res.ok) throw new Error(`${ref}: ${res.status || res.statusText || 'failed'}`)
   return ((await res.json()).values || []).map((p) => ({ ...p, repo: ref }))
 }
-
-function passesFilter(p, me) {
+function passes(p, me) {
   if (cfg.author === 'me' && p.author?.account_id !== me) return false
   if (cfg.author === 'name' && cfg.authorName.trim() && !(p.author?.display_name || '').toLowerCase().includes(cfg.authorName.trim().toLowerCase())) return false
   if (cfg.reviewer === 'me') {
@@ -142,104 +154,114 @@ function passesFilter(p, me) {
 }
 
 function render(prs) {
-  body.innerHTML = ''
   const muted = cfg.muted || []
   const shown = prs.filter((p) => !muted.includes(p.id))
-  if (!shown.length) return note('No matching pull requests.')
-  let lastRepo = ''
-  for (const p of shown) {
-    if (p.repo !== lastRepo) {
-      lastRepo = p.repo
-      const h = document.createElement('div')
-      h.className = 'repo-group'
-      h.textContent = p.repo
-      body.appendChild(h)
-    }
-    const btn = document.createElement('button')
-    btn.className = 'item pr'
-    const sum = document.createElement('span')
-    sum.className = 'sum'
-    sum.textContent = p.title || '(untitled)'
-    const mute = document.createElement('span')
-    mute.className = 'mute'
-    mute.textContent = '×'
-    mute.title = 'Mute'
-    mute.addEventListener('click', (e) => {
-      e.stopPropagation()
-      set('muted', [...(cfg.muted || []), p.id])
-      render(prs)
-    })
+  if (!shown.length) {
+    empty(muted.length ? 'No matching pull requests.' : 'No open pull requests.')
+    return
+  }
+  const wrap = document.createElement('div')
+  wrap.className = 'pr-widget'
+  const byRepo = {}
+  for (const p of shown) (byRepo[p.repo] = byRepo[p.repo] || []).push(p)
+  for (const repo of Object.keys(byRepo)) {
     const head = document.createElement('div')
-    head.style.display = 'flex'
-    head.style.alignItems = 'baseline'
-    head.style.gap = '8px'
-    head.append(sum, mute)
-
-    const meta = document.createElement('div')
-    meta.className = 'pr-meta'
-    if (p.author?.display_name) {
-      const a = document.createElement('span')
-      a.textContent = p.author.display_name
-      meta.appendChild(a)
-    }
-    const reviewers = (p.participants || []).filter((x) => x.role === 'REVIEWER')
-    if (reviewers.length) {
-      const revs = document.createElement('span')
-      revs.className = 'revs'
-      reviewers.slice(0, 5).forEach((r) => {
-        const d = document.createElement('span')
-        d.className = `dot ${mapReview(r.state)}`
-        d.title = `${r.user?.display_name || ''} · ${mapReview(r.state)}`
-        revs.appendChild(d)
+    head.className = 'pr-group-head'
+    head.innerHTML = `<span class="pr-group-name"></span><span class="pr-group-count"></span>`
+    head.querySelector('.pr-group-name').textContent = repo
+    head.querySelector('.pr-group-count').textContent = String(byRepo[repo].length)
+    wrap.appendChild(head)
+    for (const p of byRepo[repo]) {
+      const rowEl = document.createElement('div')
+      rowEl.className = 'pr-row'
+      const title = document.createElement('div')
+      title.className = 'pr-row-title'
+      title.textContent = p.title || '(untitled)'
+      const meta = document.createElement('div')
+      meta.className = 'pr-meta'
+      if (p.author?.display_name) {
+        const a = document.createElement('span')
+        a.className = 'pr-author'
+        a.textContent = p.author.display_name
+        meta.appendChild(a)
+      }
+      const reviewers = (p.participants || []).filter((x) => x.role === 'REVIEWER')
+      if (reviewers.length) {
+        const revs = document.createElement('span')
+        revs.className = 'pr-reviewers'
+        reviewers.slice(0, 5).forEach((r) => {
+          const d = document.createElement('span')
+          d.className = `pr-rev-dot ${mapReview(r.state)}`
+          d.title = `${r.user?.display_name || ''} · ${mapReview(r.state)}`
+          revs.appendChild(d)
+        })
+        meta.appendChild(revs)
+      }
+      if (p.comment_count) {
+        const c = document.createElement('span')
+        c.className = 'pr-comments'
+        c.textContent = `💬 ${p.comment_count}`
+        meta.appendChild(c)
+      }
+      const pill = document.createElement('span')
+      pill.className = `status-pill ${STATE_CLASS[p.state] || 'open'}`
+      pill.textContent = p.state
+      pill.style.marginLeft = 'auto'
+      meta.appendChild(pill)
+      rowEl.append(title, meta)
+      const href = p.links?.html?.href
+      if (href) {
+        rowEl.style.cursor = 'default'
+        rowEl.addEventListener('click', () => g.openExternal(href))
+      }
+      rowEl.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+        set('muted', [...(cfg.muted || []), p.id])
+        render(prs)
       })
-      meta.appendChild(revs)
+      wrap.appendChild(rowEl)
     }
-    const pill = document.createElement('span')
-    pill.className = `pill ${STATE_CLASS[p.state] || 'open'}`
-    pill.textContent = p.state
-    pill.style.marginLeft = 'auto'
-    meta.appendChild(pill)
-
-    btn.append(head, meta)
-    const href = p.links?.html?.href
-    if (href) btn.addEventListener('click', () => g.openExternal(href))
-    body.appendChild(btn)
   }
   if (muted.length) {
     const un = document.createElement('button')
-    un.className = 'unmute'
+    un.className = 'pr-unmute'
     un.textContent = `${muted.length} muted · Unmute all`
     un.addEventListener('click', () => {
       set('muted', [])
       void load()
     })
-    body.appendChild(un)
+    wrap.appendChild(un)
   }
+  body.innerHTML = ''
+  body.appendChild(wrap)
 }
 
 async function load() {
   if (!g) return
-  const { email, site, bbToken, jiraToken } = await account()
+  const acc = await account()
   const repos = parseRepos(cfg.repos)
-  if (!email || !bbToken) return note('Add your <b>Atlassian account</b> (email + Bitbucket token) in Settings → Atlassian.')
-  if (!repos.length) return note('Add one or more <b>repos</b> (<code>workspace/repo</code>) in ⚙.')
-  note('Loading…')
-  const headers = { Authorization: 'Basic ' + btoa(`${email}:${bbToken}`), Accept: 'application/json' }
+  if (!acc.email || !acc.bbToken) return empty('Add your <b>Atlassian account</b> (email + Bitbucket token) in Settings → Atlassian.')
+  if (!repos.length) return empty('Add one or more <b>repos</b> (<code>workspace/repo</code>) in ⚙.')
+  empty('Loading…')
+  const headers = { Authorization: 'Basic ' + btoa(`${acc.email}:${acc.bbToken}`), Accept: 'application/json' }
   const needMe = cfg.author === 'me' || cfg.reviewer === 'me'
-  const me = needMe ? await selfAccountId(email, site, jiraToken) : null
-  if (needMe && !me) return note('The "Me" filter needs your Jira token + site (used to resolve your account).', true)
+  const me = needMe ? await selfAccountId(acc.email, acc.site, acc.jiraToken) : null
+  if (needMe && !me) return fail('The "Me" filter needs your Jira token + site (used to resolve your account).')
   try {
     const groups = await Promise.all(repos.map((ref) => fetchRepoPRs(ref, headers, cfg.state).catch((e) => ({ error: e.message }))))
     const prs = []
     const errors = []
     for (const grp of groups) {
-      if (Array.isArray(grp)) prs.push(...grp.filter((p) => passesFilter(p, me)))
+      if (Array.isArray(grp)) prs.push(...grp.filter((p) => passes(p, me)))
       else if (grp && grp.error) errors.push(grp.error)
     }
-    if (!prs.length && errors.length) return note(`Could not load: ${errors.join('; ')}`, true)
+    if (!prs.length && errors.length) {
+      const auth = errors.some((e) => /: (401|403)$/.test(e))
+      return fail(auth ? 'Bitbucket auth failed — the token needs Bitbucket read access (a separate Bitbucket API token / app password, not the Jira one).' : `Could not load: ${errors.join('; ')}`)
+    }
     render(prs)
   } catch (e) {
-    note(`Could not reach Bitbucket: ${(e && e.message) || e}`, true)
+    fail(`Could not reach Bitbucket: ${(e && e.message) || e}`)
   }
 }
 

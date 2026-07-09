@@ -4,7 +4,7 @@
     "name": "Atlassian",
     "publisher": "garret",
     "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.atlassian.garret",
     "hasHost": false
   },

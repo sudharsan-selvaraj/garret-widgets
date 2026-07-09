@@ -1,14 +1,11 @@
-// Jira Tickets — native Garret look via the shared ~theme.css classes. Account (email/Jira token/site)
-// in the pack's SHARED store; per-placement filters ON the widget (⚙, g.instanceStorage). Data via
-// g.fetch (network:*.atlassian.net). No host service.
+// Jira Tickets — native Garret look via the shared ~theme.css. Account (email/Jira token/site) in the
+// pack's SHARED store; per-placement filters in g.instanceStorage, edited in a config panel that opens
+// from the frame's ⋯ → Settings (g.onOpenSettings) — no inline chrome. Data via g.fetch. No host service.
 const g = window.__garret
-const titleEl = document.getElementById('title')
-const gearBtn = document.getElementById('gear')
-const refreshBtn = document.getElementById('refresh')
 const configEl = document.getElementById('config')
 const body = document.getElementById('body')
 
-const DEFAULTS = { title: '', project: '', onlyMine: true, statuses: '', sprint: 'any', jql: '', maxResults: 15, refreshMin: '5' }
+const DEFAULTS = { project: '', onlyMine: true, statuses: '', sprint: 'any', jql: '', maxResults: 15, refreshMin: '5' }
 let cfg = { ...DEFAULTS }
 const CAT_CLASS = { 'To Do': 'todo', 'In Progress': 'progress', Done: 'done' }
 let site = ''
@@ -39,7 +36,7 @@ async function account() {
   return { email: (email || '').trim(), site: normalizeSite(s), token: token || '' }
 }
 
-/* ---- config form (native .settings-form) ---- */
+/* ---- config panel (native .settings-form), shown from the frame's ⋯ → Settings ---- */
 function row(label, control) {
   const r = document.createElement('div')
   r.className = 'settings-row'
@@ -52,7 +49,7 @@ function row(label, control) {
   r.append(l, c)
   return r
 }
-function group(...rows) {
+function group(rows) {
   const gEl = document.createElement('div')
   gEl.className = 'settings-group'
   rows.forEach((r) => gEl.appendChild(r))
@@ -96,22 +93,40 @@ function toggle(key) {
 function renderConfig() {
   configEl.innerHTML = ''
   configEl.append(
-    group(
-      row('Title', inp('title', 'optional')),
+    group([
       row('Project key', inp('project', 'e.g. OCA')),
       row('Only mine', toggle('onlyMine')),
       row('Statuses', inp('statuses', 'In Progress, In Review')),
       row('Sprint', sel('sprint', [['any', 'Any'], ['open', 'Active sprint']])),
       row('Max results', inp('maxResults', '', 'number')),
       row('Refresh', sel('refreshMin', [['0', 'Manual'], ['1', '1 min'], ['5', '5 min'], ['15', '15 min']]))
-    ),
-    group(row('JQL', inp('jql', 'advanced — overrides the above')))
+    ]),
+    group([row('JQL', inp('jql', 'advanced — overrides the above'))])
   )
+  const footer = document.createElement('div')
+  footer.className = 'settings-footer'
+  const saved = document.createElement('span')
+  saved.className = 'settings-saved'
+  saved.textContent = 'Changes save automatically'
+  const done = document.createElement('button')
+  done.className = 'settings-done'
+  done.textContent = 'Done'
+  done.addEventListener('click', closeConfig)
+  footer.append(saved, done)
+  configEl.appendChild(footer)
+}
+function openConfig() {
+  renderConfig()
+  configEl.hidden = false
+  body.style.display = 'none'
+}
+function closeConfig() {
+  configEl.hidden = true
+  body.style.display = ''
 }
 function set(key, val) {
   cfg[key] = val
   void g.instanceStorage.set(key, val)
-  if (key === 'title') titleEl.textContent = val || 'Jira Tickets'
   scheduleReload()
 }
 
@@ -174,12 +189,6 @@ async function load() {
   }
 }
 
-gearBtn.addEventListener('click', () => {
-  configEl.hidden = !configEl.hidden
-  gearBtn.classList.toggle('on', !configEl.hidden)
-})
-refreshBtn.addEventListener('click', () => void load())
-
 async function init() {
   if (g && g.instanceStorage) {
     const saved = {}
@@ -189,8 +198,6 @@ async function init() {
     }))
     cfg = { ...DEFAULTS, ...saved }
   }
-  titleEl.textContent = cfg.title || 'Jira Tickets'
-  renderConfig()
   reschedulePoll()
   await load()
 }
@@ -198,6 +205,7 @@ async function init() {
 if (g) {
   g.onReady(() => void init())
   g.onActiveChange((a) => a && void load())
+  g.onOpenSettings(() => (configEl.hidden ? openConfig() : closeConfig()))
 } else {
   void init()
 }

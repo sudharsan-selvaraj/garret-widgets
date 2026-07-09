@@ -1,16 +1,13 @@
-// Pull Requests — native Garret look via the shared ~theme.css classes. Account (email + Bitbucket
-// token, + Jira token/site for the "me" filters) in the pack's SHARED store; per-placement filters ON
-// the widget (⚙, g.instanceStorage). PRs listed per configured repo (Bitbucket API tokens can't hit
-// user-scoped list endpoints). Network via g.fetch (api.bitbucket.org + *.atlassian.net for /myself).
+// Pull Requests — native Garret look via the shared ~theme.css. Account (email + Bitbucket token, +
+// Jira token/site for "me" filters) in the pack's SHARED store; per-placement filters in
+// g.instanceStorage, edited in a config panel opened from the frame's ⋯ → Settings (g.onOpenSettings).
+// PRs listed per configured repo (Bitbucket API tokens can't hit user-scoped list endpoints).
 const g = window.__garret
-const titleEl = document.getElementById('title')
-const gearBtn = document.getElementById('gear')
-const refreshBtn = document.getElementById('refresh')
 const configEl = document.getElementById('config')
 const body = document.getElementById('body')
 const BB = 'https://api.bitbucket.org/2.0'
 
-const DEFAULTS = { title: '', repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: [] }
+const DEFAULTS = { repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: [] }
 let cfg = { ...DEFAULTS }
 const STATE_CLASS = { OPEN: 'open', MERGED: 'merged', DECLINED: 'declined' }
 
@@ -42,7 +39,7 @@ async function account() {
   return { email: (email || '').trim(), site: normalizeSite(s), bbToken: bbToken || '', jiraToken: jiraToken || '' }
 }
 
-/* ---- config form (native .settings-form) ---- */
+/* ---- config panel (native .settings-form), shown from the frame's ⋯ → Settings ---- */
 function row(label, control) {
   const r = document.createElement('div')
   r.className = 'settings-row'
@@ -88,7 +85,6 @@ function sel(key, opts) {
 function renderConfig() {
   configEl.innerHTML = ''
   const rows = [
-    row('Title', inp('title', 'optional')),
     row('Repos', inp('repos', 'workspace/repo, workspace/repo2')),
     row('State', sel('state', [['OPEN', 'Open'], ['MERGED', 'Merged'], ['DECLINED', 'Declined'], ['ALL', 'All']])),
     row('Author', sel('author', [['anyone', 'Anyone'], ['me', 'Me'], ['name', 'Someone']]))
@@ -100,11 +96,30 @@ function renderConfig() {
     row('Refresh', sel('refreshMin', [['0', 'Manual'], ['5', '5 min'], ['15', '15 min'], ['30', '30 min']]))
   )
   configEl.appendChild(group(rows))
+  const footer = document.createElement('div')
+  footer.className = 'settings-footer'
+  const saved = document.createElement('span')
+  saved.className = 'settings-saved'
+  saved.textContent = 'Changes save automatically'
+  const done = document.createElement('button')
+  done.className = 'settings-done'
+  done.textContent = 'Done'
+  done.addEventListener('click', closeConfig)
+  footer.append(saved, done)
+  configEl.appendChild(footer)
+}
+function openConfig() {
+  renderConfig()
+  configEl.hidden = false
+  body.style.display = 'none'
+}
+function closeConfig() {
+  configEl.hidden = true
+  body.style.display = ''
 }
 function set(key, val) {
   cfg[key] = val
   void g.instanceStorage.set(key, val)
-  if (key === 'title') titleEl.textContent = val || 'Pull Requests'
   if (key === 'author') renderConfig()
   scheduleReload()
 }
@@ -143,15 +158,10 @@ async function fetchRepoPRs(ref, headers, state) {
     let detail = ''
     try {
       const t = await res.text()
-      try {
-        detail = JSON.parse(t)?.error?.message || t.slice(0, 140)
-      } catch {
-        detail = t.slice(0, 140)
-      }
+      detail = JSON.parse(t)?.error?.message || ''
     } catch {
       /* no body */
     }
-    console.error('[PR fetch]', ref, { status: res.status, statusText: res.statusText, type: res.type, detail })
     throw new Error(`${ref}: ${res.status || res.statusText || 'no status'}${detail ? ' — ' + detail : ''}`)
   }
   return ((await res.json()).values || []).map((p) => ({ ...p, repo: ref }))
@@ -170,10 +180,7 @@ function passes(p, me) {
 function render(prs) {
   const muted = cfg.muted || []
   const shown = prs.filter((p) => !muted.includes(p.id))
-  if (!shown.length) {
-    empty(muted.length ? 'No matching pull requests.' : 'No open pull requests.')
-    return
-  }
+  if (!shown.length) return empty(muted.length ? 'No matching pull requests.' : 'No open pull requests.')
   const wrap = document.createElement('div')
   wrap.className = 'pr-widget'
   const byRepo = {}
@@ -224,10 +231,7 @@ function render(prs) {
       meta.appendChild(pill)
       rowEl.append(title, meta)
       const href = p.links?.html?.href
-      if (href) {
-        rowEl.style.cursor = 'default'
-        rowEl.addEventListener('click', () => g.openExternal(href))
-      }
+      if (href) rowEl.addEventListener('click', () => g.openExternal(href))
       rowEl.addEventListener('contextmenu', (e) => {
         e.preventDefault()
         set('muted', [...(cfg.muted || []), p.id])
@@ -255,7 +259,7 @@ async function load() {
   const acc = await account()
   const repos = parseRepos(cfg.repos)
   if (!acc.email || !acc.bbToken) return empty('Add your <b>Atlassian account</b> (email + Bitbucket token) in Settings → Atlassian.')
-  if (!repos.length) return empty('Add one or more <b>repos</b> (<code>workspace/repo</code>) in ⚙.')
+  if (!repos.length) return empty('Add one or more <b>repos</b> (<code>workspace/repo</code>) in ⋯ → Settings.')
   empty('Loading…')
   const headers = { Authorization: 'Basic ' + btoa(`${acc.email}:${acc.bbToken}`), Accept: 'application/json' }
   const needMe = cfg.author === 'me' || cfg.reviewer === 'me'
@@ -279,12 +283,6 @@ async function load() {
   }
 }
 
-gearBtn.addEventListener('click', () => {
-  configEl.hidden = !configEl.hidden
-  gearBtn.classList.toggle('on', !configEl.hidden)
-})
-refreshBtn.addEventListener('click', () => void load())
-
 async function init() {
   if (g && g.instanceStorage) {
     const saved = {}
@@ -294,8 +292,6 @@ async function init() {
     }))
     cfg = { ...DEFAULTS, ...saved }
   }
-  titleEl.textContent = cfg.title || 'Pull Requests'
-  renderConfig()
   reschedulePoll()
   await load()
 }
@@ -303,6 +299,7 @@ async function init() {
 if (g) {
   g.onReady(() => void init())
   g.onActiveChange((a) => a && void load())
+  g.onOpenSettings(() => (configEl.hidden ? openConfig() : closeConfig()))
 } else {
   void init()
 }

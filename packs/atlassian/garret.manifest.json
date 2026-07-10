@@ -3,7 +3,7 @@
   "id": "garret.atlassian",
   "publisher": "garret",
   "name": "Atlassian",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
   "shared": {
     "settings": {

@@ -159,7 +159,10 @@ function App(): JSX.Element {
     if (prev) {
       const fresh = prs.filter((p) => !prev.has(p.id))
       if (cfg.notify && fresh.length) {
-        g.notify(`${fresh.length} new pull request${fresh.length > 1 ? 's' : ''}`, fresh[0].title || `${fresh[0].repo} #${fresh[0].id}`)
+        // Click opens the newest PR on Bitbucket.
+        g.notify(`${fresh.length} new pull request${fresh.length > 1 ? 's' : ''}`, fresh[0].title || `${fresh[0].repo} #${fresh[0].id}`, {
+          url: fresh[0].links?.html?.href
+        })
       }
     }
     seen.current = new Set(ids)

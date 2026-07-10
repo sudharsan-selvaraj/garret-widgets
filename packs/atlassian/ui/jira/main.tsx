@@ -93,7 +93,7 @@ function App(): JSX.Element {
         return setState({ kind: 'error', msg: code === 401 || code === 403 ? 'Jira auth failed — check email + Jira token.' : `Jira request failed (${code}).` })
       }
       const issues = (await res.json<{ issues?: Issue[] }>()).issues || []
-      maybeNotify(issues)
+      maybeNotify(issues, s)
       setState({ kind: 'ok', issues })
     } catch (e) {
       setState({ kind: 'error', msg: `Could not reach Jira: ${(e as Error)?.message || e}` })
@@ -101,13 +101,15 @@ function App(): JSX.Element {
   }, [g, cfg])
 
   // Notify on newly-appeared tickets vs the persisted seen-set (skips the first load / seeding).
-  const maybeNotify = (issues: Issue[]): void => {
+  const maybeNotify = (issues: Issue[], base: string): void => {
     const ids = issues.map((i) => i.key)
     const prev = seen.current
     if (prev) {
       const fresh = issues.filter((i) => !prev.has(i.key))
       if (cfg.notify && fresh.length) {
-        g.notify(`${fresh.length} new Jira ticket${fresh.length > 1 ? 's' : ''}`, fresh[0].fields?.summary || fresh[0].key)
+        // Click opens the newest ticket (Jira's browse deep-link).
+        const url = base ? `${base}/browse/${fresh[0].key}` : undefined
+        g.notify(`${fresh.length} new Jira ticket${fresh.length > 1 ? 's' : ''}`, fresh[0].fields?.summary || fresh[0].key, { url })
       }
     }
     seen.current = new Set(ids)

@@ -1,0 +1,146 @@
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { createRoot } from 'react-dom/client'
+import {
+  Badge,
+  Dot,
+  EmptyState,
+  ErrorState,
+  Field,
+  FieldGroup,
+  Item,
+  NumberInput,
+  Scroll,
+  Select,
+  SettingsPanel,
+  Switch,
+  TextInput,
+  useActive,
+  useGarret,
+  useInstanceConfig,
+  useOpenSettings,
+  type Tone
+} from '@garretapp/sdk/react'
+
+// Jira Tickets — composed from the SDK's generic design-system components. Account (email/Jira token/
+// site) in the pack's SHARED store; per-placement filters via useInstanceConfig. Domain → generic
+// tone mapping lives HERE (the consumer), not in the SDK.
+interface Cfg {
+  project: string
+  onlyMine: boolean
+  statuses: string
+  sprint: string
+  jql: string
+  maxResults: number
+  refreshMin: string
+}
+const DEFAULTS: Cfg = { project: '', onlyMine: true, statuses: '', sprint: 'any', jql: '', maxResults: 15, refreshMin: '5' }
+const CAT_TONE: Record<string, Tone> = { 'To Do': 'neutral', 'In Progress': 'accent', Done: 'success' }
+
+interface Issue {
+  key: string
+  fields?: { summary?: string; status?: { name?: string; statusCategory?: { name?: string } } }
+}
+type State = { kind: 'msg'; node: ReactNode } | { kind: 'error'; msg: string } | { kind: 'ok'; issues: Issue[] }
+
+function normalizeSite(s: unknown): string {
+  const v = String(s || '').trim().replace(/\/+$/, '')
+  return v && !/^https?:\/\//i.test(v) ? `https://${v}` : v
+}
+function buildJql(c: Cfg): string {
+  if (c.jql.trim()) return c.jql.trim()
+  const parts: string[] = []
+  if (c.project.trim()) parts.push(`project = "${c.project.trim()}"`)
+  if (c.onlyMine) parts.push('assignee = currentUser()')
+  const statuses = c.statuses.split(',').map((s) => s.trim()).filter(Boolean)
+  if (statuses.length) parts.push(`status in (${statuses.map((s) => `"${s}"`).join(', ')})`)
+  if (c.sprint === 'open') parts.push('sprint in openSprints()')
+  return `${parts.length ? parts.join(' AND ') + ' ' : ''}ORDER BY created DESC`
+}
+
+function App(): JSX.Element {
+  const g = useGarret()
+  const active = useActive()
+  const { cfg, set, loaded } = useInstanceConfig<Cfg>(DEFAULTS)
+  const [showCfg, setShowCfg] = useState(false)
+  useOpenSettings(() => setShowCfg((s) => !s))
+  const [state, setState] = useState<State>({ kind: 'msg', node: 'Loading…' })
+  const [site, setSite] = useState('')
+
+  const load = useCallback(async () => {
+    const [email, rawSite] = await Promise.all([g.shared.storage.get<string>('email'), g.shared.storage.get<string>('jiraSite')])
+    const token = await g.shared.secrets.get('jiraToken').catch(() => '')
+    const s = normalizeSite(rawSite)
+    setSite(s)
+    if (!s || !email || !token) {
+      return setState({ kind: 'msg', node: <>Add your <b>Atlassian account</b> (email, Jira token, site) in Settings → Atlassian.</> })
+    }
+    setState({ kind: 'msg', node: 'Loading…' })
+    try {
+      const res = await g.fetch(`${s}/rest/api/3/search/jql`, {
+        method: 'POST',
+        headers: { Authorization: 'Basic ' + btoa(`${email}:${token}`), Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jql: buildJql(cfg), maxResults: Number(cfg.maxResults) || 15, fields: ['summary', 'status', 'priority'] })
+      })
+      if (!res.ok) {
+        const code = res.status || res.statusText
+        return setState({ kind: 'error', msg: code === 401 || code === 403 ? 'Jira auth failed — check email + Jira token.' : `Jira request failed (${code}).` })
+      }
+      setState({ kind: 'ok', issues: (await res.json<{ issues?: Issue[] }>()).issues || [] })
+    } catch (e) {
+      setState({ kind: 'error', msg: `Could not reach Jira: ${(e as Error)?.message || e}` })
+    }
+  }, [g, cfg])
+
+  useEffect(() => {
+    if (loaded) void load()
+  }, [loaded, load])
+  useEffect(() => {
+    const m = Number(cfg.refreshMin)
+    if (!(m > 0)) return
+    const t = setInterval(() => active && void load(), m * 60000)
+    return () => clearInterval(t)
+  }, [cfg.refreshMin, active, load])
+
+  if (showCfg) {
+    return (
+      <SettingsPanel onDone={() => setShowCfg(false)}>
+        <FieldGroup>
+          <Field label="Project key"><TextInput value={cfg.project} placeholder="e.g. OCA" onCommit={(v) => set({ project: v })} /></Field>
+          <Field label="Only mine"><Switch on={cfg.onlyMine} onChange={(v) => set({ onlyMine: v })} /></Field>
+          <Field label="Statuses"><TextInput value={cfg.statuses} placeholder="In Progress, In Review" onCommit={(v) => set({ statuses: v })} /></Field>
+          <Field label="Sprint"><Select value={cfg.sprint} options={[['any', 'Any'], ['open', 'Active sprint']]} onChange={(v) => set({ sprint: v })} /></Field>
+          <Field label="Max results"><NumberInput value={cfg.maxResults} onCommit={(v) => set({ maxResults: v })} /></Field>
+          <Field label="Refresh"><Select value={cfg.refreshMin} options={[['0', 'Manual'], ['1', '1 min'], ['5', '5 min'], ['15', '15 min']]} onChange={(v) => set({ refreshMin: v })} /></Field>
+        </FieldGroup>
+        <FieldGroup>
+          <Field label="JQL"><TextInput value={cfg.jql} placeholder="advanced — overrides the above" onCommit={(v) => set({ jql: v })} /></Field>
+        </FieldGroup>
+      </SettingsPanel>
+    )
+  }
+
+  if (state.kind === 'msg') return <EmptyState>{state.node}</EmptyState>
+  if (state.kind === 'error') return <ErrorState>{state.msg}</ErrorState>
+  if (!state.issues.length) return <EmptyState>No matching tickets.</EmptyState>
+  return (
+    <Scroll>
+      {state.issues.map((it) => {
+        const tone = CAT_TONE[it.fields?.status?.statusCategory?.name || 'To Do'] || 'neutral'
+        return (
+          <Item
+            key={it.key}
+            leading={<Dot tone={tone} />}
+            trailing={<Badge tone={tone}>{it.fields?.status?.name || 'Unknown'}</Badge>}
+            onClick={() => site && g.openExternal(`${site}/browse/${it.key}`)}
+          >
+            <span className="gx-truncate">
+              <span style={{ color: 'var(--gx-text-2)', fontWeight: 600 }}>{it.key}</span> {it.fields?.summary || ''}
+            </span>
+          </Item>
+        )
+      })}
+    </Scroll>
+  )
+}
+
+createRoot(document.getElementById('root')!).render(<App />)

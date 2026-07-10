@@ -22,6 +22,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: https://registry.npmjs.org
+      - name: Install deps
+        run: npm ci
       - name: Build packs
         run: node scripts/build.mjs
       - name: Publish .garret assets to the "packs" release

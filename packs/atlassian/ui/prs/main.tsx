@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   Accordion,
@@ -13,18 +13,20 @@ import {
   Select,
   SettingsPanel,
   TextInput,
+  Toggle,
   useActive,
   useGarret,
   useInstanceConfig,
   useOpenSettings,
+  useRefresh,
   type Tone
 } from '@garretapp/sdk/react'
 
-// Pull Requests — composed from the SDK's generic components. Account (email + Bitbucket token, +
-// Jira token/site for "me" filters) in the pack's SHARED store. PRs listed per configured repo
-// (Bitbucket API tokens can't do user-scoped lists). Domain → tone mapping lives here.
+// Pull Requests — composed from the SDK's generic components. Account in the pack's SHARED store; PRs
+// per configured repo. Custom title, manual refresh, and notify-on-new at parity with the built-in.
 const BB = 'https://api.bitbucket.org/2.0'
 interface Cfg {
+  title: string
   repos: string
   state: string
   author: string
@@ -32,9 +34,10 @@ interface Cfg {
   reviewer: string
   reviewState: string
   refreshMin: string
+  notify: boolean
   muted: number[]
 }
-const DEFAULTS: Cfg = { repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', muted: [] }
+const DEFAULTS: Cfg = { title: '', repos: '', state: 'OPEN', author: 'anyone', authorName: '', reviewer: 'anyone', reviewState: 'any', refreshMin: '5', notify: false, muted: [] }
 const STATE_TONE: Record<string, Tone> = { OPEN: 'accent', MERGED: 'success', DECLINED: 'danger' }
 const REVIEW_TONE: Record<string, Tone> = { approved: 'success', changes_requested: 'danger', pending: 'neutral' }
 
@@ -71,6 +74,11 @@ function App(): JSX.Element {
   const [showCfg, setShowCfg] = useState(false)
   useOpenSettings(() => setShowCfg((s) => !s))
   const [state, setState] = useState<State>({ kind: 'msg', node: 'Loading…' })
+  const seen = useRef<Set<number> | null>(null)
+
+  useEffect(() => {
+    if (loaded) g.setTitle(cfg.title.trim())
+  }, [g, loaded, cfg.title])
 
   const load = useCallback(async () => {
     const [email, rawSite] = await Promise.all([g.shared.storage.get<string>('email'), g.shared.storage.get<string>('jiraSite')])
@@ -81,7 +89,7 @@ function App(): JSX.Element {
     const repos = parseRepos(cfg.repos)
     if (!email || !bbToken) return setState({ kind: 'msg', node: <>Add your <b>Atlassian account</b> (email + Bitbucket token) in Settings → Atlassian.</> })
     if (!repos.length) return setState({ kind: 'msg', node: <>Add one or more <b>repos</b> (<code>workspace/repo</code>) in ⋯ → Settings.</> })
-    setState({ kind: 'msg', node: 'Loading…' })
+    setState((prev) => (prev.kind === 'ok' ? prev : { kind: 'msg', node: 'Loading…' }))
     const headers = { Authorization: 'Basic ' + btoa(`${email}:${bbToken}`), Accept: 'application/json' }
     const needMe = cfg.author === 'me' || cfg.reviewer === 'me'
     let me: string | null = null
@@ -140,14 +148,34 @@ function App(): JSX.Element {
         const auth = errors.some((e) => /\b(401|403)\b/.test(e))
         return setState({ kind: 'error', msg: auth ? 'Bitbucket auth failed — the token needs Bitbucket read access (a separate Bitbucket API token / app password, not the Jira one).' : `Could not load: ${errors.join('; ')}` })
       }
+      maybeNotify(prs)
       setState({ kind: 'ok', prs })
     } catch (e) {
       setState({ kind: 'error', msg: `Could not reach Bitbucket: ${(e as Error)?.message || e}` })
     }
   }, [g, cfg])
 
+  const maybeNotify = (prs: PR[]): void => {
+    const ids = prs.map((p) => p.id)
+    const prev = seen.current
+    if (prev) {
+      const fresh = prs.filter((p) => !prev.has(p.id))
+      if (cfg.notify && fresh.length) {
+        g.notify(`${fresh.length} new pull request${fresh.length > 1 ? 's' : ''}`, fresh[0].title || `${fresh[0].repo} #${fresh[0].id}`)
+      }
+    }
+    seen.current = new Set(ids)
+    void g.instanceStorage.set('seen', ids)
+  }
+
   useEffect(() => {
-    if (loaded) void load()
+    if (!loaded) return
+    void (async () => {
+      const saved = await g.instanceStorage.get<number[]>('seen')
+      seen.current = Array.isArray(saved) ? new Set(saved) : null
+      await load()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, load])
   useEffect(() => {
     const m = Number(cfg.refreshMin)
@@ -155,11 +183,13 @@ function App(): JSX.Element {
     const t = setInterval(() => active && void load(), m * 60000)
     return () => clearInterval(t)
   }, [cfg.refreshMin, active, load])
+  useRefresh(() => void load())
 
   if (showCfg) {
     return (
       <SettingsPanel onDone={() => setShowCfg(false)}>
         <FieldGroup>
+          <Field label="Title"><TextInput value={cfg.title} placeholder="optional" onCommit={(v) => set({ title: v })} /></Field>
           <Field label="Repos"><TextInput value={cfg.repos} placeholder="workspace/repo, workspace/repo2" onCommit={(v) => set({ repos: v })} /></Field>
           <Field label="State"><Select value={cfg.state} options={[['OPEN', 'Open'], ['MERGED', 'Merged'], ['DECLINED', 'Declined'], ['ALL', 'All']]} onChange={(v) => set({ state: v })} /></Field>
           <Field label="Author"><Select value={cfg.author} options={[['anyone', 'Anyone'], ['me', 'Me'], ['name', 'Someone']]} onChange={(v) => set({ author: v })} /></Field>
@@ -167,6 +197,7 @@ function App(): JSX.Element {
           <Field label="Reviewer"><Select value={cfg.reviewer} options={[['anyone', 'Anyone'], ['me', 'Me']]} onChange={(v) => set({ reviewer: v })} /></Field>
           <Field label="My review"><Select value={cfg.reviewState} options={[['any', 'Any'], ['pending', 'Needs my review'], ['approved', 'Approved'], ['changes_requested', 'Changes requested']]} onChange={(v) => set({ reviewState: v })} /></Field>
           <Field label="Refresh"><Select value={cfg.refreshMin} options={[['0', 'Manual'], ['5', '5 min'], ['15', '15 min'], ['30', '30 min']]} onChange={(v) => set({ refreshMin: v })} /></Field>
+          <Field label="Notify on new"><Toggle on={cfg.notify} onChange={(v) => set({ notify: v })} /></Field>
         </FieldGroup>
       </SettingsPanel>
     )

@@ -17,8 +17,7 @@ import {
   useActive,
   useGarret,
   useInstanceConfig,
-  useOpenSettings,
-  useRefresh,
+  useWidgetMenu,
   type Tone
 } from '@garretapp/sdk/react'
 
@@ -72,7 +71,6 @@ function App(): JSX.Element {
   const active = useActive()
   const { cfg, set, loaded } = useInstanceConfig<Cfg>(DEFAULTS)
   const [showCfg, setShowCfg] = useState(false)
-  useOpenSettings(() => setShowCfg((s) => !s))
   const [state, setState] = useState<State>({ kind: 'msg', node: 'Loading…' })
   const seen = useRef<Set<number> | null>(null)
 
@@ -183,7 +181,10 @@ function App(): JSX.Element {
     const t = setInterval(() => active && void load(), m * 60000)
     return () => clearInterval(t)
   }, [cfg.refreshMin, active, load])
-  useRefresh(() => void load())
+  useWidgetMenu([
+    { id: 'settings', label: 'Settings', run: () => setShowCfg((s) => !s) },
+    { id: 'refresh', label: 'Refresh', run: () => void load() }
+  ])
 
   if (showCfg) {
     return (

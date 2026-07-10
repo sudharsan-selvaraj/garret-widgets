@@ -8,7 +8,7 @@
     "build": "node scripts/build.mjs"
   },
   "dependencies": {
-    "@garretapp/sdk": "^0.1.2",
+    "@garretapp/sdk": "^0.1.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

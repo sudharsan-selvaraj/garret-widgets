@@ -181,9 +181,13 @@ function App(): JSX.Element {
   useEffect(() => {
     const m = Number(cfg.refreshMin)
     if (!(m > 0)) return
-    const t = setInterval(() => active && void load(), m * 60000)
+    // Poll while the board is active; if "Notify on new" is on, keep polling when the board is
+    // idle too — throttled to a >=5 min floor — so new-PR alerts fire even when you're not
+    // looking. No extra process: this is the widget's own already-running webview.
+    const period = (active ? m : Math.max(m, 5)) * 60000
+    const t = setInterval(() => (active || cfg.notify) && void load(), period)
     return () => clearInterval(t)
-  }, [cfg.refreshMin, active, load])
+  }, [cfg.refreshMin, active, cfg.notify, load])
   useWidgetMenu([
     { id: 'settings', label: 'Settings', run: () => setShowCfg((s) => !s) },
     { id: 'refresh', label: 'Refresh', run: () => void load() }

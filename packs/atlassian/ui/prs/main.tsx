@@ -13,7 +13,7 @@ import {
   Select,
   SettingsPanel,
   TextInput,
-  Toggle,
+  Switch,
   useActive,
   useGarret,
   useInstanceConfig,
@@ -197,7 +197,7 @@ function App(): JSX.Element {
           <Field label="Reviewer"><Select value={cfg.reviewer} options={[['anyone', 'Anyone'], ['me', 'Me']]} onChange={(v) => set({ reviewer: v })} /></Field>
           <Field label="My review"><Select value={cfg.reviewState} options={[['any', 'Any'], ['pending', 'Needs my review'], ['approved', 'Approved'], ['changes_requested', 'Changes requested']]} onChange={(v) => set({ reviewState: v })} /></Field>
           <Field label="Refresh"><Select value={cfg.refreshMin} options={[['0', 'Manual'], ['5', '5 min'], ['15', '15 min'], ['30', '30 min']]} onChange={(v) => set({ refreshMin: v })} /></Field>
-          <Field label="Notify on new"><Toggle on={cfg.notify} onChange={(v) => set({ notify: v })} /></Field>
+          <Field label="Notify on new"><Switch on={cfg.notify} onChange={(v) => set({ notify: v })} /></Field>
         </FieldGroup>
       </SettingsPanel>
     )

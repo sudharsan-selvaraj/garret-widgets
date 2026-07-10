@@ -8,12 +8,12 @@ import {
   Field,
   FieldGroup,
   Item,
-  List,
+  Scroll,
   NumberInput,
   Select,
   SettingsPanel,
   TextInput,
-  Toggle,
+  Switch,
   useActive,
   useGarret,
   useInstanceConfig,
@@ -139,12 +139,12 @@ function App(): JSX.Element {
         <FieldGroup>
           <Field label="Title"><TextInput value={cfg.title} placeholder="optional" onCommit={(v) => set({ title: v })} /></Field>
           <Field label="Project key"><TextInput value={cfg.project} placeholder="e.g. OCA" onCommit={(v) => set({ project: v })} /></Field>
-          <Field label="Only mine"><Toggle on={cfg.onlyMine} onChange={(v) => set({ onlyMine: v })} /></Field>
+          <Field label="Only mine"><Switch on={cfg.onlyMine} onChange={(v) => set({ onlyMine: v })} /></Field>
           <Field label="Statuses"><TextInput value={cfg.statuses} placeholder="In Progress, In Review" onCommit={(v) => set({ statuses: v })} /></Field>
           <Field label="Sprint"><Select value={cfg.sprint} options={[['any', 'Any'], ['open', 'Active sprint']]} onChange={(v) => set({ sprint: v })} /></Field>
           <Field label="Max results"><NumberInput value={cfg.maxResults} onCommit={(v) => set({ maxResults: v })} /></Field>
           <Field label="Refresh"><Select value={cfg.refreshMin} options={[['0', 'Manual'], ['1', '1 min'], ['5', '5 min'], ['15', '15 min']]} onChange={(v) => set({ refreshMin: v })} /></Field>
-          <Field label="Notify on new"><Toggle on={cfg.notify} onChange={(v) => set({ notify: v })} /></Field>
+          <Field label="Notify on new"><Switch on={cfg.notify} onChange={(v) => set({ notify: v })} /></Field>
         </FieldGroup>
         <FieldGroup>
           <Field label="JQL"><TextInput value={cfg.jql} placeholder="advanced — overrides the above" onCommit={(v) => set({ jql: v })} /></Field>
@@ -157,7 +157,7 @@ function App(): JSX.Element {
   if (state.kind === 'error') return <ErrorState>{state.msg}</ErrorState>
   if (!state.issues.length) return <EmptyState>No matching tickets.</EmptyState>
   return (
-    <List>
+    <Scroll>
       {state.issues.map((it) => {
         const tone = CAT_TONE[it.fields?.status?.statusCategory?.name || 'To Do'] || 'neutral'
         return (
@@ -173,7 +173,7 @@ function App(): JSX.Element {
           </Item>
         )
       })}
-    </List>
+    </Scroll>
   )
 }
 

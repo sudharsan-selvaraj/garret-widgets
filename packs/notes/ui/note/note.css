@@ -1,0 +1,23 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+#pad {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  resize: none;
+  /* Transparent so the widget frame's tint/opacity shows through. */
+  background: transparent;
+  color: var(--gx-text);
+  font-family: var(--gx-font);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 12px;
+}
+#pad::placeholder {
+  color: var(--gx-text-3);
+}

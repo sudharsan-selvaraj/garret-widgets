@@ -9,6 +9,15 @@
     "hasHost": false
   },
   {
+    "id": "garret.notes",
+    "name": "Notes",
+    "publisher": "garret",
+    "description": "A quick scratchpad that saves as you type.",
+    "version": "1.0.0",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.notes.garret",
+    "hasHost": false
+  },
+  {
     "id": "demo.sticky-note",
     "name": "Sticky Note",
     "publisher": "demo",

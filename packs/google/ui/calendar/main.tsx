@@ -756,9 +756,11 @@ function App(): JSX.Element {
     setCredsLoaded(true)
   }, [g])
 
+  // Wait for bind before touching g.storage/g.secrets — `loaded` (from useInstanceConfig) flips true
+  // only after the widget is bound to the host lane; calling earlier throws "widget not bound".
   useEffect(() => {
-    void reloadCreds()
-  }, [reloadCreds])
+    if (loaded) void reloadCreds()
+  }, [loaded, reloadCreds])
 
   // Apply the custom title to the frame header (empty → falls back to the widget name).
   useEffect(() => {

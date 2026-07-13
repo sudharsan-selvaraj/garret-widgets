@@ -13,7 +13,7 @@
     "name": "Google Calendar",
     "publisher": "garret",
     "description": "Google Calendar — agenda list or a day timeline, with attendees & one-click join.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.google.garret",
     "hasHost": true
   }

@@ -53,6 +53,21 @@ for (const name of packs) {
     }
   }
 
+  // Host (optional): a widget with a Node `host` → compile host/index.ts to dist/host/index.cjs (the
+  // utilityProcess forks this). platform:node keeps Node builtins external; deps are inlined.
+  const hostEntry = join(dir, 'host', 'index.ts')
+  if (existsSync(hostEntry)) {
+    await build({
+      entryPoints: [hostEntry],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: ['node20'],
+      minify: true,
+      outfile: join(stage, 'dist', 'host', 'index.cjs')
+    })
+  }
+
   const out = join(outDir, `${id}.garret`)
   rmSync(out, { force: true })
   execFileSync('zip', ['-qr', out, '.'], { cwd: stage })

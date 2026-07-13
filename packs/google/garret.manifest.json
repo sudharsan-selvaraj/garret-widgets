@@ -1,0 +1,19 @@
+{
+  "apiVersion": 2,
+  "id": "garret.google",
+  "publisher": "garret",
+  "name": "Google Calendar",
+  "version": "1.0.0",
+  "description": "Google Calendar — agenda list or a day timeline, with attendees & one-click join.",
+  "widgets": [
+    {
+      "id": "calendar",
+      "name": "Calendar",
+      "ui": "dist/calendar",
+      "host": "dist/host/index.cjs",
+      "capabilities": ["secrets", "openExternal"],
+      "defaultSize": { "w": 4, "h": 6 },
+      "minSize": { "w": 3, "h": 3 }
+    }
+  ]
+}

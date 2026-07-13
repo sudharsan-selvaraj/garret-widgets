@@ -7,5 +7,14 @@
     "version": "1.6.0",
     "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.atlassian.garret",
     "hasHost": false
+  },
+  {
+    "id": "garret.google",
+    "name": "Google Calendar",
+    "publisher": "garret",
+    "description": "Google Calendar — agenda list or a day timeline, with attendees & one-click join.",
+    "version": "1.0.0",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.google.garret",
+    "hasHost": true
   }
 ]

@@ -481,3 +481,35 @@ html, body, #root { height: 100%; }
   box-shadow: inset 0 0.5px 0 var(--hairline);
 }
 
+
+/* Connected-account row + connect/disconnect button (ported from the app's service settings). */
+:root {
+  --surface-input: rgba(118, 118, 128, 0.18);
+}
+.svc-connected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(48, 209, 88, 0.12);
+  font-size: 12.5px;
+}
+.svc-connected b {
+  font-weight: 600;
+}
+.svc-btn {
+  background: var(--surface-input);
+  border: none;
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.svc-error {
+  color: var(--danger);
+  font-size: 11.5px;
+  padding: 0 4px;
+}

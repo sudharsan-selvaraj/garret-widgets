@@ -3,7 +3,7 @@
   "id": "garret.google",
   "publisher": "garret",
   "name": "Google Calendar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Google Calendar — agenda list or a day timeline, with attendees & one-click join.",
   "widgets": [
     {

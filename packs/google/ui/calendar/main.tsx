@@ -652,28 +652,30 @@ function Settings({
 
   return (
     <SettingsPanel onDone={onDone}>
-      <FieldGroup>
-        <Field label="OAuth Client ID">
-          <TextInput
-            value={clientId}
-            placeholder="…apps.googleusercontent.com"
-            onCommit={(v) => {
-              setClientId(v)
-              void g.storage.set('clientId', v.trim())
-            }}
-          />
-        </Field>
-        <Field label="Client secret">
-          <TextInput
-            value={clientSecret}
-            placeholder="GOCSPX-…"
-            onCommit={(v) => {
-              setClientSecret(v)
-              void g.secrets.set('clientSecret', v.trim())
-            }}
-          />
-        </Field>
-      </FieldGroup>
+      {!email && (
+        <FieldGroup>
+          <Field label="OAuth Client ID">
+            <TextInput
+              value={clientId}
+              placeholder="…apps.googleusercontent.com"
+              onCommit={(v) => {
+                setClientId(v)
+                void g.storage.set('clientId', v.trim())
+              }}
+            />
+          </Field>
+          <Field label="Client secret">
+            <TextInput
+              value={clientSecret}
+              placeholder="GOCSPX-…"
+              onCommit={(v) => {
+                setClientSecret(v)
+                void g.secrets.set('clientSecret', v.trim())
+              }}
+            />
+          </Field>
+        </FieldGroup>
+      )}
 
       <FieldGroup>
         {email ? (

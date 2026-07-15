@@ -3,7 +3,7 @@
   "id": "garret.atlassian",
   "publisher": "garret",
   "name": "Atlassian",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
   "shared": {
     "settings": {
@@ -31,6 +31,12 @@
           "label": "Bitbucket token",
           "type": "secret",
           "placeholder": "Bitbucket API token / app password"
+        },
+        {
+          "key": "bgNotify",
+          "label": "Background notifications",
+          "type": "boolean",
+          "default": false
         }
       ]
     }
@@ -53,6 +59,21 @@
       "minSize": {
         "w": 3,
         "h": 3
+      },
+      "notifier": {
+        "auth": { "type": "basic", "user": "{shared.email}", "pass": "{secret.jiraToken}" },
+        "request": {
+          "url": "https://{shared.jiraSite}/rest/api/3/search/jql",
+          "method": "POST",
+          "headers": { "Accept": "application/json", "Content-Type": "application/json" },
+          "body": "{\"jql\":\"assignee = currentUser() AND statusCategory != Done ORDER BY created DESC\",\"maxResults\":20,\"fields\":[\"summary\"]}"
+        },
+        "itemsPath": "issues",
+        "idField": "key",
+        "titleTemplate": "New Jira ticket: {item.key}",
+        "bodyTemplate": "{item.fields.summary}",
+        "urlTemplate": "https://{shared.jiraSite}/browse/{item.key}",
+        "intervalMin": 5
       }
     },
     {

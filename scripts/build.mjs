@@ -21,11 +21,18 @@ for (const name of packs) {
   const dir = join(packsDir, name)
   const manifestPath = join(dir, 'garret.manifest.json')
   if (!existsSync(manifestPath)) continue
-  const { id } = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  const { id } = manifest
   const stage = join(outDir, `.stage-${name}`)
   rmSync(stage, { recursive: true, force: true })
   mkdirSync(join(stage, 'dist'), { recursive: true })
   cpSync(manifestPath, join(stage, 'garret.manifest.json'))
+
+  // Bundle the pack's icon (manifest.icon) + README (manifest.readme, default README.md) at the
+  // .garret root, next to the manifest — the app reads them from there for the Discover/details UI.
+  for (const rel of [manifest.icon, manifest.readme || 'README.md']) {
+    if (rel && !rel.includes('..') && existsSync(join(dir, rel))) cpSync(join(dir, rel), join(stage, rel))
+  }
 
   const uiDir = join(dir, 'ui')
   if (existsSync(uiDir)) {

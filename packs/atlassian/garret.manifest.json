@@ -3,8 +3,10 @@
   "id": "garret.atlassian",
   "publisher": "garret",
   "name": "Atlassian",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
+  "icon": "icon.svg",
+  "readme": "README.md",
   "shared": {
     "settings": {
       "schema": [

@@ -3,7 +3,7 @@
   "id": "garret.adb-devices",
   "publisher": "garret",
   "name": "Android Device Management",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "List, mirror, and control connected Android devices over adb + scrcpy.",
   "icon": "icon.svg",
   "readme": "README.md",
@@ -11,7 +11,9 @@
     {
       "id": "devices",
       "name": "Device control",
+      "description": "Live list of connected Android devices. Click one to mirror and control its screen.",
       "ui": "dist/devices",
+      "preview": "previews/devices.svg",
       "host": "dist/host/index.cjs",
       "capabilities": ["process", "windows"],
       "defaultSize": { "w": 6, "h": 5 },

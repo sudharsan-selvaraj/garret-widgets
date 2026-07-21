@@ -28,10 +28,15 @@ for (const name of packs) {
   mkdirSync(join(stage, 'dist'), { recursive: true })
   cpSync(manifestPath, join(stage, 'garret.manifest.json'))
 
-  // Bundle the pack's icon (manifest.icon) + README (manifest.readme, default README.md) at the
-  // .garret root, next to the manifest — the app reads them from there for the Discover/details UI.
-  for (const rel of [manifest.icon, manifest.readme || 'README.md']) {
-    if (rel && !rel.includes('..') && existsSync(join(dir, rel))) cpSync(join(dir, rel), join(stage, rel))
+  // Bundle the pack's icon (manifest.icon) + README (manifest.readme, default README.md) + each
+  // widget's preview screenshot (widget.preview) at the .garret root, next to the manifest — the app
+  // reads them from there for the Discover/details UI + the Add-widget gallery.
+  const assets = [manifest.icon, manifest.readme || 'README.md', ...(manifest.widgets || []).map((w) => w.preview)]
+  for (const rel of assets) {
+    if (rel && !rel.includes('..') && existsSync(join(dir, rel))) {
+      mkdirSync(join(stage, rel, '..'), { recursive: true })
+      cpSync(join(dir, rel), join(stage, rel))
+    }
   }
 
   const uiDir = join(dir, 'ui')

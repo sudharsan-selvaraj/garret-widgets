@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" font-family="-apple-system, system-ui, sans-serif">
+  <rect width="320" height="200" fill="#1b1b1d"/>
+  <text x="24" y="34" fill="#8a8a90" font-size="11" font-weight="600" letter-spacing="0.5">DEVICES</text>
+  <g>
+    <rect x="20" y="48" width="280" height="44" rx="10" fill="#242426"/>
+    <rect x="34" y="60" width="14" height="20" rx="3" fill="#3ddc84"/>
+    <text x="60" y="68" fill="#f2f2f5" font-size="13" font-weight="500">OnePlus Nord 5</text>
+    <text x="60" y="83" fill="#6a6a70" font-size="10">Android 16 · connected</text>
+    <circle cx="284" cy="70" r="13" fill="#0a84ff"/>
+    <path d="M280 64 l8 6 l-8 6 z" fill="#fff"/>
+  </g>
+  <g>
+    <rect x="20" y="100" width="280" height="44" rx="10" fill="#242426"/>
+    <rect x="34" y="112" width="14" height="20" rx="3" fill="#3ddc84"/>
+    <text x="60" y="120" fill="#f2f2f5" font-size="13" font-weight="500">Galaxy S21</text>
+    <text x="60" y="135" fill="#6a6a70" font-size="10">Android 14 · connected</text>
+    <circle cx="284" cy="122" r="13" fill="#0a84ff"/>
+    <path d="M280 116 l8 6 l-8 6 z" fill="#fff"/>
+  </g>
+  <g>
+    <rect x="20" y="152" width="280" height="36" rx="10" fill="#202022"/>
+    <rect x="34" y="162" width="14" height="16" rx="3" fill="#48484a"/>
+    <text x="60" y="174" fill="#8a8a90" font-size="13">Pixel 7 · unauthorized</text>
+  </g>
+</svg>

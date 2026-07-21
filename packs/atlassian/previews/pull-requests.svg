@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" font-family="-apple-system, system-ui, sans-serif">
+  <rect width="320" height="200" fill="#1b1b1d"/>
+  <text x="24" y="32" fill="#8a8a90" font-size="11" font-weight="600" letter-spacing="0.5">PULL REQUESTS</text>
+  <g>
+    <g transform="translate(0,44)">
+      <circle cx="30" cy="9" r="5" fill="none" stroke="#30d158" stroke-width="2"/>
+      <text x="46" y="8" fill="#f2f2f5" font-size="12" font-weight="500">Gallery preview cards</text>
+      <text x="46" y="24" fill="#6a6a70" font-size="10">app · feat/gallery → main</text>
+      <rect x="252" y="0" width="52" height="18" rx="9" fill="#14361f"/>
+      <text x="278" y="13" fill="#30d158" font-size="9" font-weight="600" text-anchor="middle">2 ✓</text>
+    </g>
+    <line x1="20" y1="84" x2="300" y2="84" stroke="#2c2c2e"/>
+    <g transform="translate(0,96)">
+      <circle cx="30" cy="9" r="5" fill="none" stroke="#30d158" stroke-width="2"/>
+      <text x="46" y="8" fill="#f2f2f5" font-size="12" font-weight="500">Move device pack</text>
+      <text x="46" y="24" fill="#6a6a70" font-size="10">widgets · chore/move → main</text>
+      <rect x="252" y="0" width="52" height="18" rx="9" fill="#3a2e12"/>
+      <text x="278" y="13" fill="#ff9f0a" font-size="9" font-weight="600" text-anchor="middle">review</text>
+    </g>
+    <line x1="20" y1="136" x2="300" y2="136" stroke="#2c2c2e"/>
+    <g transform="translate(0,148)">
+      <circle cx="30" cy="9" r="5" fill="none" stroke="#30d158" stroke-width="2"/>
+      <text x="46" y="8" fill="#f2f2f5" font-size="12" font-weight="500">Notifier templates</text>
+      <text x="46" y="24" fill="#6a6a70" font-size="10">app · feat/notify → main</text>
+      <rect x="252" y="0" width="52" height="18" rx="9" fill="#14361f"/>
+      <text x="278" y="13" fill="#30d158" font-size="9" font-weight="600" text-anchor="middle">1 ✓</text>
+    </g>
+  </g>
+</svg>

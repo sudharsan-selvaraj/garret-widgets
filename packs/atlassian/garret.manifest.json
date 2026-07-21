@@ -3,7 +3,7 @@
   "id": "garret.atlassian",
   "publisher": "garret",
   "name": "Atlassian",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Jira issues and Bitbucket pull requests. One account, per-product tokens.",
   "icon": "icon.svg",
   "readme": "README.md",
@@ -47,7 +47,9 @@
     {
       "id": "jira",
       "name": "Jira Tickets",
+      "description": "Your assigned Jira issues, with key, status, and priority. Click to open in Jira.",
       "ui": "dist/jira",
+      "preview": "previews/jira.svg",
       "capabilities": [
         "secrets",
         "openExternal",
@@ -81,7 +83,9 @@
     {
       "id": "pull-requests",
       "name": "Pull Requests",
+      "description": "Open Bitbucket pull requests to review or authored by you, with status.",
       "ui": "dist/prs",
+      "preview": "previews/pull-requests.svg",
       "capabilities": [
         "secrets",
         "openExternal",

@@ -3,7 +3,7 @@
   "id": "garret.google",
   "publisher": "garret",
   "name": "Google Calendar",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Google Calendar — agenda list or a day timeline, with attendees & one-click join.",
   "icon": "icon.svg",
   "readme": "README.md",
@@ -11,7 +11,9 @@
     {
       "id": "calendar",
       "name": "Calendar",
+      "description": "Your upcoming events as an agenda or day timeline, with guests and one-click join.",
       "ui": "dist/calendar",
+      "preview": "previews/calendar.svg",
       "host": "dist/host/index.cjs",
       "capabilities": ["secrets", "openExternal"],
       "defaultSize": { "w": 4, "h": 6 },

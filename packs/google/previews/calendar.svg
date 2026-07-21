@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" font-family="-apple-system, system-ui, sans-serif">
+  <rect width="320" height="200" fill="#1b1b1d"/>
+  <text x="24" y="32" fill="#f2f2f5" font-size="14" font-weight="600">Tuesday</text>
+  <text x="80" y="32" fill="#6a6a70" font-size="12">June 16</text>
+  <g>
+    <g transform="translate(0,50)">
+      <text x="24" y="12" fill="#8a8a90" font-size="11" text-anchor="start">9:30</text>
+      <rect x="64" y="0" width="4" height="34" rx="2" fill="#0a84ff"/>
+      <text x="80" y="14" fill="#f2f2f5" font-size="12" font-weight="500">Standup</text>
+      <text x="80" y="29" fill="#6a6a70" font-size="10">9:30 – 9:45 · Meet</text>
+    </g>
+    <g transform="translate(0,96)">
+      <text x="24" y="12" fill="#8a8a90" font-size="11">11:00</text>
+      <rect x="64" y="0" width="4" height="34" rx="2" fill="#30d158"/>
+      <text x="80" y="14" fill="#f2f2f5" font-size="12" font-weight="500">Design review</text>
+      <text x="80" y="29" fill="#6a6a70" font-size="10">11:00 – 12:00 · 3 guests</text>
+    </g>
+    <g transform="translate(0,142)">
+      <text x="24" y="12" fill="#8a8a90" font-size="11">15:00</text>
+      <rect x="64" y="0" width="4" height="34" rx="2" fill="#ff9f0a"/>
+      <text x="80" y="14" fill="#f2f2f5" font-size="12" font-weight="500">1:1 with Alex</text>
+      <text x="80" y="29" fill="#6a6a70" font-size="10">15:00 – 15:30</text>
+    </g>
+  </g>
+</svg>

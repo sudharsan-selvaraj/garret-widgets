@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      /* Match the app's native widget look (see design tokens in src/renderer/src/styles.css): a dark
+         card, SF Pro, system-blue accent, iOS green for the online state. The board embeds this widget
+         in a white webview, so the body paints its own opaque dark surface. The board frame draws the
+         "Android Devices" title + ⋯ menu — no in-widget header (would duplicate it). */
+      :root {
+        color-scheme: dark;
+        --text: rgba(255, 255, 255, 0.92);
+        --text-2: rgba(235, 235, 245, 0.6);
+        --text-3: rgba(235, 235, 245, 0.3);
+        --hover: rgba(255, 255, 255, 0.06);
+        --green: #30d158;
+        --danger: #ff453a;
+      }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: #1c1c1e; color: var(--text);
+        font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      }
+      .wrap { padding: 5px; }
+      .msg { padding: 12px 10px; color: var(--text-2); font-size: 12px; }
+      .msg .err, .err { color: #ff6b6b; margin: 0 0 8px; }
+      .retry {
+        font: inherit; font-size: 12px; color: var(--text); background: var(--hover);
+        border: 0; border-radius: 6px; padding: 5px 12px; cursor: pointer;
+      }
+      .retry:hover { background: rgba(255, 255, 255, 0.12); }
+      .list { list-style: none; margin: 0; padding: 0; }
+      .row {
+        width: 100%; display: flex; align-items: center; gap: 9px;
+        font: inherit; color: inherit; text-align: left; border: 0; border-radius: 7px;
+        background: transparent; padding: 7px 8px; cursor: pointer;
+      }
+      .row:hover:not(:disabled) { background: var(--hover); }
+      .row:disabled { cursor: default; }
+      .dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); }
+      .dot.device { background: var(--green); }
+      .dot.unauthorized { background: #e6b23a; }
+      .dot.offline { background: var(--danger); }
+      .info { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+      .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .serial { font-size: 11px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .state { flex: none; font-size: 11px; color: var(--text-2); text-transform: capitalize; }
+      /* Small always-on green run glyph (IDE-style) — the affordance to open the mirror. */
+      .play {
+        flex: none; display: inline-flex; align-items: center; justify-content: center;
+        width: 26px; height: 26px; border-radius: 7px; background: transparent; color: var(--green);
+      }
+      .row:hover:not(:disabled) .play { background: rgba(48, 209, 88, 0.16); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

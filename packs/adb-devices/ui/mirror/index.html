@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root { color-scheme: dark; }
+      /* Transparent — the window has no chrome/background; only the device screen (canvas) is opaque. */
+      html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+      #root { height: 100%; }
+      /* The host window (SurfaceWindowRoot) draws the draggable titlebar; the guest fills the rest
+         with the device screen. */
+      /* Device screen (flex:1) + a fixed vertical control column on the right. The host reserves the
+         column's width in the aspect lock, so the device area alone keeps the video ratio. */
+      .screen-wrap { position: relative; display: flex; height: 100%; }
+      .screen-holder { position: relative; flex: 1 1 auto; min-width: 0; }
+      /* The window is aspect-matched to the device (host resize), so the canvas fills exactly — no
+         object-fit letterbox (which would expose the transparent window as bands). `touch-action:none`
+         + `user-select:none` so the webview doesn't hijack drags/gestures we forward to the device. */
+      .screen { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; }
+      .msg {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font: 12px -apple-system, system-ui, sans-serif; color: #e6e6ea; opacity: 0.75; text-align: center;
+      }
+      .msg.err { color: #ff8a8a; padding: 0 16px; }
+
+      /* Connection-lost card (device unplugged / adb or scrcpy died): full-window scrim over the last
+         frame + reason + Reconnect. */
+      .lost {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+        padding: 24px; text-align: center;
+        background: rgba(16, 16, 18, 0.66);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      }
+      .lost-reason { margin: 0; font: 13px -apple-system, system-ui, sans-serif; color: #e6e6ea; }
+      .lost-retry {
+        font: 13px -apple-system, system-ui, sans-serif; color: #fff;
+        padding: 7px 18px; border: 0; border-radius: 8px; cursor: pointer;
+        background: #0a84ff;
+      }
+      .lost-retry:hover { background: #339cff; }
+      .lost-retry:active { background: #0060df; }
+
+      /* Always-visible vertical control column (Back/Home/Recents + system actions), 48px wide.
+         Width MUST equal NAVBAR_W in NavBar.tsx (the aspect inset reserves the same). */
+      .navbar-v {
+        flex: 0 0 48px; width: 48px;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 3px; padding: 10px 0;
+        background: rgba(22, 22, 24, 0.92);
+        border-left: 0.5px solid rgba(255, 255, 255, 0.08);
+        overflow-y: auto;
+      }
+      .nav-sep { width: 22px; height: 1px; margin: 5px 0; background: rgba(255, 255, 255, 0.12); flex: none; }
+      .nav-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; padding: 0; flex: none;
+        border: 0; border-radius: 10px; background: transparent;
+        color: #e6e6ea; cursor: pointer;
+        transition: background 0.12s ease;
+      }
+      .nav-btn:hover { background: rgba(255, 255, 255, 0.12); }
+      .nav-btn:active { background: rgba(255, 255, 255, 0.22); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

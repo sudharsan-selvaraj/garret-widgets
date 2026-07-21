@@ -9,6 +9,12 @@
   },
   "dependencies": {
     "@garretapp/sdk": "^0.1.4",
+    "@yume-chan/adb": "^2.6.0",
+    "@yume-chan/adb-scrcpy": "^2.3.2",
+    "@yume-chan/adb-server-node-tcp": "^2.5.2",
+    "@yume-chan/scrcpy": "^2.3.0",
+    "@yume-chan/scrcpy-decoder-tinyh264": "^2.1.0",
+    "@yume-chan/scrcpy-decoder-webcodecs": "^2.5.3",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

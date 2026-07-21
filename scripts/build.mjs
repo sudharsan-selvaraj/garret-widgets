@@ -73,6 +73,10 @@ for (const name of packs) {
       minify: true,
       outfile: join(stage, 'dist', 'host', 'index.cjs')
     })
+    // Ship any host assets (e.g. scrcpy-server.jar) NEXT TO the compiled host — the host reads them
+    // via __dirname at runtime.
+    const assets = join(dir, 'host', 'assets')
+    if (existsSync(assets)) cpSync(assets, join(stage, 'dist', 'host'), { recursive: true })
   }
 
   const out = join(outDir, `${id}.garret`)

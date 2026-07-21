@@ -20,5 +20,16 @@
     "hasHost": true,
     "icon": "https://raw.githubusercontent.com/sudharsan-selvaraj/garret-widgets/main/packs/google/icon.svg",
     "readme": "https://raw.githubusercontent.com/sudharsan-selvaraj/garret-widgets/main/packs/google/README.md"
+  },
+  {
+    "id": "garret.adb-devices",
+    "name": "Android Device Management",
+    "publisher": "garret",
+    "description": "List, mirror, and control connected Android devices over adb + scrcpy.",
+    "version": "0.1.0",
+    "url": "https://github.com/sudharsan-selvaraj/garret-widgets/releases/download/packs/garret.adb-devices.garret",
+    "hasHost": true,
+    "icon": "https://raw.githubusercontent.com/sudharsan-selvaraj/garret-widgets/main/packs/adb-devices/icon.svg",
+    "readme": "https://raw.githubusercontent.com/sudharsan-selvaraj/garret-widgets/main/packs/adb-devices/README.md"
   }
 ]

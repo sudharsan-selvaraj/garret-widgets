@@ -25,8 +25,10 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install deps
         run: npm ci
+      - name: Audit packs
+        run: npm run audit
       - name: Build packs
-        run: node scripts/build.mjs
+        run: npm run build
       - name: Publish .garret assets to the "packs" release
         env:
           GH_TOKEN: ${{ github.token }}
